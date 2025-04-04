@@ -1,0 +1,205 @@
+{
+  "_note1": "KEEP THIS FILE! Check it into a version control system (VCS) like git.",
+  "_note2": "ObjectBox manages crucial IDs for your object model. See docs for details.",
+  "_note3": "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
+  "entities": [
+    {
+      "id": "1:6877290785149141106",
+      "lastPropertyId": "8:8234539157285855676",
+      "name": "MatrixSessionData",
+      "properties": [
+        {
+          "id": "1:8965277528179040339",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "5:5606197167034900527",
+          "name": "userId",
+          "type": 9,
+          "flags": 2080,
+          "indexId": "4:6263200210856289954"
+        },
+        {
+          "id": "6:2459883155040190725",
+          "name": "homeserver",
+          "type": 9
+        },
+        {
+          "id": "7:4411120149269076577",
+          "name": "deviceId",
+          "type": 9
+        },
+        {
+          "id": "8:8234539157285855676",
+          "name": "deviceName",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "3:8961677099846179029",
+      "lastPropertyId": "8:7410140208520578391",
+      "name": "MatrixEventEntity",
+      "properties": [
+        {
+          "id": "1:7090622641611171294",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:7516130442823733955",
+          "name": "eventId",
+          "type": 9,
+          "flags": 2080,
+          "indexId": "1:8280708112250155475"
+        },
+        {
+          "id": "3:8676661710862388967",
+          "name": "roomId",
+          "type": 9,
+          "flags": 2048,
+          "indexId": "2:4563974284146249665"
+        },
+        {
+          "id": "4:4787978601234138510",
+          "name": "type",
+          "type": 9
+        },
+        {
+          "id": "5:3832145259422157757",
+          "name": "senderId",
+          "type": 9
+        },
+        {
+          "id": "6:8714077916984075492",
+          "name": "content",
+          "type": 9
+        },
+        {
+          "id": "7:5379474826811046541",
+          "name": "originServerTs",
+          "type": 6
+        },
+        {
+          "id": "8:7410140208520578391",
+          "name": "isLocal",
+          "type": 1
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "5:2706354259282930452",
+      "lastPropertyId": "7:8450673024393733294",
+      "name": "MatrixRoomEntity",
+      "properties": [
+        {
+          "id": "1:3292414558675659912",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:4656802297497560418",
+          "name": "roomId",
+          "type": 9,
+          "flags": 2080,
+          "indexId": "3:6277558435260476742"
+        },
+        {
+          "id": "3:1627916879468116391",
+          "name": "name",
+          "type": 9
+        },
+        {
+          "id": "4:6351503602734542732",
+          "name": "avatarUrl",
+          "type": 9
+        },
+        {
+          "id": "5:8042856461942828613",
+          "name": "isDirect",
+          "type": 1
+        },
+        {
+          "id": "6:407289029936818614",
+          "name": "lastMessageTimestamp",
+          "type": 6
+        },
+        {
+          "id": "7:8450673024393733294",
+          "name": "unreadCount",
+          "type": 6
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "6:3737247898925823182",
+      "lastPropertyId": "5:4145223775482125996",
+      "name": "MatrixUserEntity",
+      "properties": [
+        {
+          "id": "1:3737302500951606984",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:8745773765861120813",
+          "name": "userId",
+          "type": 9,
+          "flags": 2080,
+          "indexId": "5:2365911502172388301"
+        },
+        {
+          "id": "3:647174547525191238",
+          "name": "displayName",
+          "type": 9
+        },
+        {
+          "id": "4:7085052383562436737",
+          "name": "avatarUrl",
+          "type": 9
+        },
+        {
+          "id": "5:4145223775482125996",
+          "name": "isOnline",
+          "type": 1
+        }
+      ],
+      "relations": []
+    }
+  ],
+  "lastEntityId": "6:3737247898925823182",
+  "lastIndexId": "5:2365911502172388301",
+  "lastRelationId": "0:0",
+  "lastSequenceId": "0:0",
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
+  "retiredEntityUids": [
+    8163850506880497412,
+    5078406833206166750
+  ],
+  "retiredIndexUids": [],
+  "retiredPropertyUids": [
+    2875865182795856635,
+    7765450668949649971,
+    6726164487772431367,
+    4307317420215163128,
+    1418559600346702199,
+    6910129869717448178,
+    8780939241126882462,
+    4481824049804981215,
+    5248466387769387821,
+    9050524095772775444,
+    4909169974243688680,
+    1459653684857930878
+  ],
+  "retiredRelationUids": [],
+  "version": 1
+}
