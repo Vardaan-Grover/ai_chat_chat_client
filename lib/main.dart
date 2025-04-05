@@ -1,5 +1,6 @@
 import 'package:ai_chat_chat_client/views/screens/about_screen.dart';
 import 'package:ai_chat_chat_client/views/screens/chat_screen.dart';
+import 'package:ai_chat_chat_client/views/screens/connect_networks_screen.dart';
 import 'package:ai_chat_chat_client/views/screens/home_screen.dart';
 import 'package:ai_chat_chat_client/views/screens/language_screen.dart';
 import 'package:ai_chat_chat_client/views/screens/login_screen.dart';
@@ -25,7 +26,8 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
-      home: const SearchScreen(), // <- Show SplashScreen instead of MyHomePage
+      home:
+          const ConnectNetworksScreen(), // <- Show SplashScreen instead of MyHomePage
     );
   }
 }
