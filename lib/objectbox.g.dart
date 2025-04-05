@@ -16,7 +16,7 @@ import 'package:objectbox_flutter_libs/objectbox_flutter_libs.dart';
 
 import 'models/matrix/matrix_event_entity.dart';
 import 'models/matrix/matrix_room_entity.dart';
-import 'models/matrix/matrix_session_data.dart';
+import 'models/matrix/matrix_session_entity.dart';
 import 'models/matrix/matrix_user_entity.dart';
 
 export 'package:objectbox/objectbox.dart'; // so that callers only have to import this file
@@ -25,7 +25,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
       id: const obx_int.IdUid(1, 6877290785149141106),
       name: 'MatrixSessionData',
-      lastPropertyId: const obx_int.IdUid(8, 8234539157285855676),
+      lastPropertyId: const obx_int.IdUid(10, 7574971546910124824),
       flags: 0,
       properties: <obx_int.ModelProperty>[
         obx_int.ModelProperty(
@@ -53,6 +53,17 @@ final _entities = <obx_int.ModelEntity>[
             id: const obx_int.IdUid(8, 8234539157285855676),
             name: 'deviceName',
             type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(9, 8928220240955564565),
+            name: 'clientName',
+            type: 9,
+            flags: 2080,
+            indexId: const obx_int.IdUid(6, 5177288908404124110)),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(10, 7574971546910124824),
+            name: 'lastUpdate',
+            type: 6,
             flags: 0)
       ],
       relations: <obx_int.ModelRelation>[],
@@ -226,7 +237,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
   final model = obx_int.ModelInfo(
       entities: _entities,
       lastEntityId: const obx_int.IdUid(6, 3737247898925823182),
-      lastIndexId: const obx_int.IdUid(5, 2365911502172388301),
+      lastIndexId: const obx_int.IdUid(6, 5177288908404124110),
       lastRelationId: const obx_int.IdUid(0, 0),
       lastSequenceId: const obx_int.IdUid(0, 0),
       retiredEntityUids: const [8163850506880497412, 5078406833206166750],
@@ -264,12 +275,15 @@ obx_int.ModelDefinition getObjectBoxModel() {
           final homeserverOffset = fbb.writeString(object.homeserver);
           final deviceIdOffset = fbb.writeString(object.deviceId);
           final deviceNameOffset = fbb.writeString(object.deviceName);
-          fbb.startTable(9);
+          final clientNameOffset = fbb.writeString(object.clientName);
+          fbb.startTable(11);
           fbb.addInt64(0, object.id);
           fbb.addOffset(4, userIdOffset);
           fbb.addOffset(5, homeserverOffset);
           fbb.addOffset(6, deviceIdOffset);
           fbb.addOffset(7, deviceNameOffset);
+          fbb.addOffset(8, clientNameOffset);
+          fbb.addInt64(9, object.lastUpdate);
           fbb.finish(fbb.endTable());
           return object.id;
         },
@@ -278,17 +292,23 @@ obx_int.ModelDefinition getObjectBoxModel() {
           final rootOffset = buffer.derefObject(0);
           final userIdParam = const fb.StringReader(asciiOptimization: true)
               .vTableGet(buffer, rootOffset, 12, '');
+          final clientNameParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGet(buffer, rootOffset, 20, '');
           final homeserverParam = const fb.StringReader(asciiOptimization: true)
               .vTableGet(buffer, rootOffset, 14, '');
           final deviceIdParam = const fb.StringReader(asciiOptimization: true)
               .vTableGet(buffer, rootOffset, 16, '');
           final deviceNameParam = const fb.StringReader(asciiOptimization: true)
               .vTableGet(buffer, rootOffset, 18, '');
+          final lastUpdateParam =
+              const fb.Int64Reader().vTableGet(buffer, rootOffset, 22, 0);
           final object = MatrixSessionData(
               userId: userIdParam,
+              clientName: clientNameParam,
               homeserver: homeserverParam,
               deviceId: deviceIdParam,
-              deviceName: deviceNameParam)
+              deviceName: deviceNameParam,
+              lastUpdate: lastUpdateParam)
             ..id = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
 
           return object;
@@ -465,6 +485,14 @@ class MatrixSessionData_ {
   /// See [MatrixSessionData.deviceName].
   static final deviceName =
       obx.QueryStringProperty<MatrixSessionData>(_entities[0].properties[4]);
+
+  /// See [MatrixSessionData.clientName].
+  static final clientName =
+      obx.QueryStringProperty<MatrixSessionData>(_entities[0].properties[5]);
+
+  /// See [MatrixSessionData.lastUpdate].
+  static final lastUpdate =
+      obx.QueryIntegerProperty<MatrixSessionData>(_entities[0].properties[6]);
 }
 
 /// [MatrixEventEntity] entity fields to define ObjectBox queries.

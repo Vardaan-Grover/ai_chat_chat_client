@@ -5,7 +5,7 @@
   "entities": [
     {
       "id": "1:6877290785149141106",
-      "lastPropertyId": "8:8234539157285855676",
+      "lastPropertyId": "10:7574971546910124824",
       "name": "MatrixSessionData",
       "properties": [
         {
@@ -35,6 +35,18 @@
           "id": "8:8234539157285855676",
           "name": "deviceName",
           "type": 9
+        },
+        {
+          "id": "9:8928220240955564565",
+          "name": "clientName",
+          "type": 9,
+          "flags": 2080,
+          "indexId": "6:5177288908404124110"
+        },
+        {
+          "id": "10:7574971546910124824",
+          "name": "lastUpdate",
+          "type": 6
         }
       ],
       "relations": []
@@ -176,7 +188,7 @@
     }
   ],
   "lastEntityId": "6:3737247898925823182",
-  "lastIndexId": "5:2365911502172388301",
+  "lastIndexId": "6:5177288908404124110",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
   "modelVersion": 5,
