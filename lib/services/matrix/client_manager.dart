@@ -5,7 +5,6 @@ import 'package:matrix/matrix.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
-import '../../config/app_config.dart';
 import 'custom_http_client.dart';
 import 'init_with_restore.dart';
 import '../db/database_builder.dart';
