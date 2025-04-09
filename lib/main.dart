@@ -1,5 +1,6 @@
 import 'package:ai_chat_chat_client/services/matrix/client_manager.dart';
 import 'package:ai_chat_chat_client/services/log/logging_service.dart';
+import 'package:ai_chat_chat_client/services/matrix/matrix_providers.dart';
 import 'package:ai_chat_chat_client/views/widgets/my_matrix_widget.dart';
 
 import 'package:flutter/material.dart';
@@ -21,7 +22,15 @@ void main() async {
 
   log.info("Application initialized with ${clients.length} clients.");
 
-  runApp(ProviderScope(child: MyApp(clients: clients, store: store)));
+  runApp(
+    ProviderScope(
+      overrides: [
+        matrixClientsProvider.overrideWith((ref) => clients),
+        sharedPreferencesProvider.overrideWith((ref) => store),
+      ],
+      child: MyApp(clients: clients, store: store)
+    )
+  );
 }
 
 class MyApp extends StatelessWidget {

@@ -27,14 +27,23 @@ class _MyMatrixWidgetState extends ConsumerState<MyMatrixWidget>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // // Initialize the clients provider with the clients passed to the widget
+    // ref.read(matrixClientsProvider.notifier).state = widget.clients;
 
-    // Initialize the clients provider with the clients passed to the widget
-    ref.read(matrixClientsProvider.notifier).state = widget.clients;
+    // // Override the sharedPreferencesProvider with the store passed to the widget
+    // ProviderScope.containerOf(context).updateOverrides([
+    //   sharedPreferencesProvider.overrideWithValue(widget.store),
+    // ]);
 
-    // Override the sharedPreferencesProvider with the store passed to the widget
-    ProviderScope.containerOf(context).updateOverrides([
-      sharedPreferencesProvider.overrideWithValue(widget.store),
-    ]);
+    // Future.microtask(() {
+    //   // Initialize the clients provider with the clients passed to the widget
+    //   ref.read(matrixClientsProvider.notifier).state = widget.clients;
+
+    //   // Override the sharedPreferencesProvider with the store passed to the widget
+    //   ProviderScope.containerOf(context).updateOverrides([
+    //     sharedPreferencesProvider.overrideWithValue(widget.store),
+    //   ]);
+    // });
   }
 
   @override
