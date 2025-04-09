@@ -149,7 +149,7 @@ class SqfLiteEncryptionHelper {
         logger.fine(
           'Applying encryption key to database: ${path.split('/').last}',
         );
-        await db.execute("PRAGMA key = x'${_toHex(cipher!)}'");
+        await db.rawQuery('PRAGMA key = "${_toHex(cipher!)}"');
 
         // Check if the key was applied successfully
         try {
@@ -205,8 +205,8 @@ class SqfLiteEncryptionHelper {
         return false;
       } catch (e) {
         await db.close();
-        logger.fine('Database is corrupted or partially encrypted');
-        return false;
+        logger.warning('Database is corrupted');
+        throw Exception('Database file is corrupted: $e');
       }
     } catch (e) {
       final errorMessage = e.toString().toLowerCase();
@@ -232,179 +232,215 @@ class SqfLiteEncryptionHelper {
   /// This operation can fail if there's insufficient disk space or if
   /// the database is currently in use by another connection.
   Future<void> ensureDatabaseFileEncrypted() async {
-    if (!await isDatabaseFileEncrypted() && File(path).existsSync()) {
-      logger.info(
-        'Database exists but is not encrypted. Starting encryption process.',
-      );
-
-      final tempPath = '$path.encrypted';
-      Database? plainDb, encryptedDb;
-
-      try {
-        // Clean up any existing temporary file
-        final tempFile = File(tempPath);
-        if (tempFile.existsSync()) {
-          await tempFile.delete();
-        }
-
-        // Open both databases
-        plainDb = await _open(path);
-        encryptedDb = await _open(
-          tempPath,
-          options: OpenDatabaseOptions(version: 1, onConfigure: applyPragmaKey),
+    try {
+      if (!await isDatabaseFileEncrypted() && File(path).existsSync()) {
+        logger.info(
+          'Database exists but is not encrypted. Starting encryption process.',
         );
 
-        // Start transaction in encrypted DB for atomicity
-        await encryptedDb.execute('BEGIN TRANSACTION');
+        final tempPath = '$path.encrypted';
+        Database? plainDb, encryptedDb;
 
-        // 1. Copy all tables and data
-        final tables = await plainDb.rawQuery(
-          "SELECT name, sql FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'",
-        );
-
-        for (final table in tables) {
-          final tableName = table['name'] as String;
-          final tableSql = table['sql'] as String?;
-
-          if (tableSql == null || tableSql.isEmpty) {
-            logger.warning('Could not determine schema for table: $tableName');
-            continue;
-          }
-
-          logger.fine('Migrating table: $tableName');
-
-          // Create table in encrypted database
-          await encryptedDb.execute(tableSql);
-
-          // Copy data using batched approach for efficiency
-          final count =
-              Sqflite.firstIntValue(
-                await plainDb.rawQuery('SELECT COUNT(*) FROM "$tableName"'),
-              ) ??
-              0;
-
-          // Use batch processing for large tables
-          const batchSize = 500;
-          for (int offset = 0; offset < count; offset += batchSize) {
-            final batch = encryptedDb.batch();
-
-            final rows = await plainDb.rawQuery(
-              'SELECT * FROM "$tableName" LIMIT $batchSize OFFSET $offset',
-            );
-
-            for (final row in rows) {
-              // Use parameterized query to avoid SQL injection
-              final columns = row.keys.join(', ');
-              final placeholders = List.filled(row.keys.length, '?').join(', ');
-
-              batch.rawInsert(
-                'INSERT INTO "$tableName" ($columns) VALUES ($placeholders)',
-                row.values.map((v) => v).toList(),
-              );
-            }
-
-            await batch.commit(noResult: true);
-            logger.fine(
-              'Migrated ${offset + rows.length}/$count rows in $tableName',
-            );
-          }
-        }
-
-        // 2. Copy indexes
-        final indexes = await plainDb.rawQuery(
-          "SELECT name, sql FROM sqlite_master WHERE type='index' AND name NOT LIKE 'sqlite_%'",
-        );
-
-        for (final index in indexes) {
-          final indexSql = index['sql'] as String?;
-          if (indexSql != null && indexSql.isNotEmpty) {
-            await encryptedDb.execute(indexSql);
-          }
-        }
-
-        // 3. Copy triggers
-        final triggers = await plainDb.rawQuery(
-          "SELECT name, sql FROM sqlite_master WHERE type='trigger' AND name NOT LIKE 'sqlite_%'",
-        );
-
-        for (final trigger in triggers) {
-          final triggerSql = trigger['sql'] as String?;
-          if (triggerSql != null && triggerSql.isNotEmpty) {
-            await encryptedDb.execute(triggerSql);
-          }
-        }
-
-        // 4. Copy views
-        final views = await plainDb.rawQuery(
-          "SELECT name, sql FROM sqlite_master WHERE type='view' AND name NOT LIKE 'sqlite_%'",
-        );
-
-        for (final view in views) {
-          final viewSql = view['sql'] as String?;
-          if (viewSql != null && viewSql.isNotEmpty) {
-            await encryptedDb.execute(viewSql);
-          }
-        }
-
-        // Commit the transaction
-        await encryptedDb.execute('COMMIT');
-
-        // Close both databases
-        await plainDb.close();
-        await encryptedDb.close();
-        plainDb = null;
-        encryptedDb = null;
-
-        // Replace original with encrypted version
-        await File(path).delete();
-        await File(tempPath).rename(path);
-
-        logger.info('Database encryption completed successfully');
-      } catch (e, stackTrace) {
-        logger.severe('Error during database encryption', e, stackTrace);
-
-        // Try to rollback if we're in the middle of a transaction
-        if (encryptedDb != null) {
-          try {
-            await encryptedDb.execute('ROLLBACK');
-          } catch (rollbackError) {
-            logger.warning('Failed to rollback transaction: $rollbackError');
-          }
-        }
-
-        // Try to clean up the temp file if it exists
         try {
+          // Clean up any existing temporary file
           final tempFile = File(tempPath);
           if (tempFile.existsSync()) {
             await tempFile.delete();
           }
-        } catch (cleanupError) {
-          logger.warning('Failed to clean up temporary file: $cleanupError');
-        }
 
-        rethrow; // Re-throw the original exception
-      } finally {
-        // Ensure connections are closed
-        if (plainDb != null) {
+          // Open both databases
+          plainDb = await _open(path);
+          encryptedDb = await _open(
+            tempPath,
+            options: OpenDatabaseOptions(
+              version: 1,
+              onConfigure: applyPragmaKey,
+            ),
+          );
+
+          // Start transaction in encrypted DB for atomicity
+          await encryptedDb.execute('BEGIN TRANSACTION');
+
+          // 1. Copy all tables and data
+          final tables = await plainDb.rawQuery(
+            "SELECT name, sql FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite%'",
+          );
+
+          logger.finest("Found ${tables.length} tables to migrate");
+
+          for (final table in tables) {
+            final tableName = table['name'] as String;
+            final tableSql = table['sql'] as String?;
+
+            if (tableSql == null || tableSql.isEmpty) {
+              logger.warning(
+                'Could not determine schema for table: $tableName',
+              );
+              continue;
+            }
+
+            logger.fine('Migrating table: $tableName');
+
+            // Create table in encrypted database
+            await encryptedDb.execute(tableSql);
+
+            // Copy data using batched approach for efficiency
+            final count =
+                Sqflite.firstIntValue(
+                  await plainDb.rawQuery('SELECT COUNT(*) FROM "$tableName"'),
+                ) ??
+                0;
+
+            // Use batch processing for large tables
+            const batchSize = 500;
+            for (int offset = 0; offset < count; offset += batchSize) {
+              final batch = encryptedDb.batch();
+
+              final rows = await plainDb.rawQuery(
+                'SELECT * FROM "$tableName" LIMIT $batchSize OFFSET $offset',
+              );
+
+              for (final row in rows) {
+                // Use parameterized query to avoid SQL injection
+                final columns = row.keys.join(', ');
+                final placeholders = List.filled(
+                  row.keys.length,
+                  '?',
+                ).join(', ');
+
+                batch.rawInsert(
+                  'INSERT INTO "$tableName" ($columns) VALUES ($placeholders)',
+                  row.values.map((v) => v).toList(),
+                );
+              }
+
+              await batch.commit(noResult: true);
+              logger.fine(
+                'Migrated ${offset + rows.length}/$count rows in $tableName',
+              );
+            }
+          }
+
+          // 2. Copy indexes
+          final indexes = await plainDb.rawQuery(
+            "SELECT name, sql FROM sqlite_master WHERE type='index' AND name NOT LIKE 'sqlite_%'",
+          );
+
+          for (final index in indexes) {
+            final indexSql = index['sql'] as String?;
+            if (indexSql != null && indexSql.isNotEmpty) {
+              await encryptedDb.execute(indexSql);
+            }
+          }
+
+          // 3. Copy triggers
+          final triggers = await plainDb.rawQuery(
+            "SELECT name, sql FROM sqlite_master WHERE type='trigger' AND name NOT LIKE 'sqlite_%'",
+          );
+
+          for (final trigger in triggers) {
+            final triggerSql = trigger['sql'] as String?;
+            if (triggerSql != null && triggerSql.isNotEmpty) {
+              await encryptedDb.execute(triggerSql);
+            }
+          }
+
+          // 4. Copy views
+          final views = await plainDb.rawQuery(
+            "SELECT name, sql FROM sqlite_master WHERE type='view' AND name NOT LIKE 'sqlite_%'",
+          );
+
+          for (final view in views) {
+            final viewSql = view['sql'] as String?;
+            if (viewSql != null && viewSql.isNotEmpty) {
+              await encryptedDb.execute(viewSql);
+            }
+          }
+
+          // Commit the transaction
+          await encryptedDb.execute('COMMIT');
+
+          // Close both databases
+          await plainDb.close();
+          await encryptedDb.close();
+          plainDb = null;
+          encryptedDb = null;
+
+          // Replace original with encrypted version
+          await File(path).delete();
+          await File(tempPath).rename(path);
+
+          logger.info('Database encryption completed successfully');
+        } catch (e, stackTrace) {
+          logger.severe('Error during database encryption', e, stackTrace);
+
+          // Try to rollback if we're in the middle of a transaction
+          if (encryptedDb != null) {
+            try {
+              await encryptedDb.execute('ROLLBACK');
+            } catch (rollbackError) {
+              logger.warning('Failed to rollback transaction: $rollbackError');
+            }
+          }
+
+          // Try to clean up the temp file if it exists
           try {
-            await plainDb.close();
-          } catch (e) {
-            logger.warning('Error closing plain database: $e');
+            final tempFile = File(tempPath);
+            if (tempFile.existsSync()) {
+              await tempFile.delete();
+            }
+          } catch (cleanupError) {
+            logger.warning('Failed to clean up temporary file: $cleanupError');
+          }
+
+          rethrow; // Re-throw the original exception
+        } finally {
+          // Ensure connections are closed
+          if (plainDb != null) {
+            try {
+              await plainDb.close();
+            } catch (e) {
+              logger.warning('Error closing plain database: $e');
+            }
+          }
+
+          if (encryptedDb != null) {
+            try {
+              await encryptedDb.close();
+            } catch (e) {
+              logger.warning('Error closing encrypted database: $e');
+            }
           }
         }
-
-        if (encryptedDb != null) {
-          try {
-            await encryptedDb.close();
-          } catch (e) {
-            logger.warning('Error closing encrypted database: $e');
-          }
-        }
+      } else {
+        logger.fine(
+          'Database is already encrypted or does not exist. No action needed.',
+        );
       }
-    } else {
-      logger.fine(
-        'Database is already encrypted or does not exist. No action needed.',
-      );
+    } catch(e) {
+      if (e is DatabaseException && e.toString().contains('corrupted')) {
+        logger.warning(
+          'Detected corrupted database file, deleting and creating new encrypted one',
+        );
+
+        // Delete corrupted file
+        final file = File(path);
+        if (file.existsSync()) {
+          final backupPath =
+              '$path.corrupted.${DateTime.now().millisecondsSinceEpoch}';
+          await file.rename(backupPath);
+          logger.info('Moved corrupted database to $backupPath');
+        }
+
+        // Create new empty encrypted database
+        final db = await _open(
+          path,
+          options: OpenDatabaseOptions(version: 1, onConfigure: applyPragmaKey),
+        );
+        await db.close();
+      } else {
+        rethrow;
+      }
     }
   }
 

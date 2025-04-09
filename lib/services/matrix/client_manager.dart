@@ -4,13 +4,15 @@ import 'package:matrix/encryption/utils/key_verification.dart';
 import 'package:matrix/matrix.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:collection/collection.dart';
 
 import 'custom_http_client.dart';
-import 'init_with_restore.dart';
+import 'init_with_restore_extension.dart';
 import '../db/database_builder.dart';
 import '../platform/platform_infos.dart';
+import '../../config/setting_keys.dart';
 
-class ClientManager {
+abstract class ClientManager {
   static final logging.Logger logger = logging.Logger('ClientManager');
   static final String clientNamespace =
       PlatformInfos.isReleaseMode
@@ -31,14 +33,14 @@ class ClientManager {
     SharedPreferences store,
   ) async {
     logger.info('Adding client name to store: $clientName');
-    
+
     // Get the current list of client names or create a new one if it doesn't exist
     final clientNamesList = store.getStringList(clientNamespace) ?? [];
-    
+
     // Add the new client name to the list
     clientNamesList.add(clientName);
     logger.fine('Updated client list size: ${clientNamesList.length}');
-    
+
     // Save the updated list back to shared preferences
     await store.setStringList(clientNamespace, clientNamesList);
     logger.fine('Client name successfully added to store');
@@ -58,21 +60,21 @@ class ClientManager {
     SharedPreferences store,
   ) async {
     logger.info('Removing client name from store: $clientName');
-    
+
     // Get the current list of client names or create a new one if it doesn't exist
     final clientNamesList = store.getStringList(clientNamespace) ?? [];
     final previousLength = clientNamesList.length;
-    
+
     // Remove the specified client name from the list
     clientNamesList.remove(clientName);
-    
+
     // Check if the client was actually removed
     if (previousLength != clientNamesList.length) {
       logger.fine('Client name was found and removed');
     } else {
       logger.warning('Client name $clientName was not found in the store');
     }
-    
+
     // Save the updated list back to shared preferences
     await store.setStringList(clientNamespace, clientNamesList);
     logger.fine('Updated client list size: ${clientNamesList.length}');
@@ -131,7 +133,7 @@ class ClientManager {
 
     // Create client instances for each name
     logger.fine('Creating ${clientNames.length} client instances');
-    final clients = clientNames.map((name) => createClient(name)).toList();
+    final clients = clientNames.map((name) => createClient(name, store)).toList();
 
     // Initialize clients if requested
     if (initialize) {
@@ -174,8 +176,8 @@ class ClientManager {
     return clients;
   }
 
-  static Client createClient(String name) {
-    // TODO: shareKeysWith implementation pending
+  static Client createClient(String name, SharedPreferences store) {
+    final shareKeysWith = AppSettings.shareKeysWith.getItem(store);
 
     return Client(
       name,
@@ -190,10 +192,12 @@ class ClientManager {
         AuthenticationTypes.sso,
         AuthenticationTypes.oauth2,
       },
-      httpClient: PlatformInfos.isAndroid ? CustomHttpClient.createHTTPClient() : null,
+      httpClient:
+          PlatformInfos.isAndroid ? CustomHttpClient.createHTTPClient() : null,
       defaultNetworkRequestTimeout: const Duration(minutes: 30),
       enableDehydratedDevices: true,
       nativeImplementations: NativeImplementationsIsolate(compute),
+      shareKeysWith: ShareKeysWith.values.singleWhereOrNull((share) => share.name == shareKeysWith) ?? ShareKeysWith.all,
     );
   }
 }

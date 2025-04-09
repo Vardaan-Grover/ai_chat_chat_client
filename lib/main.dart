@@ -1,28 +1,50 @@
-import 'package:flutter/material.dart';
+import 'package:ai_chat_chat_client/services/matrix/client_manager.dart';
 import 'package:ai_chat_chat_client/services/log/logging_service.dart';
+import 'package:ai_chat_chat_client/views/widgets/my_matrix_widget.dart';
 
-void main() {
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:matrix/matrix.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   LoggingService.init();
 
   final log = LoggingService.getLogger("Main");
-  log.info("All Services Initialized");
+  final store = await SharedPreferences.getInstance();
+  final clients = await ClientManager.getClients(
+    initialize: true,
+    store: store,
+  );
 
-  runApp(const MyApp());
+  log.info("Application initialized with ${clients.length} clients.");
+
+  runApp(ProviderScope(child: MyApp(clients: clients, store: store)));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final List<Client> clients;
+  final SharedPreferences store;
+
+  const MyApp({super.key, required this.clients, required this.store});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+    return MyMatrixWidget(
+      clients: clients,
+      store: store,
+      child: MaterialApp(
+        title: 'AI Chat Chat',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+          useMaterial3: true,
+        ),
+        home: const Scaffold(
+          body: Center(child: Text('Welcome to AI Chat Chat!')),
+        ),
       ),
-      home: const Scaffold(),
     );
   }
 }
