@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:ai_chat_chat_client/config/app_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
@@ -55,6 +56,10 @@ class PlatformInfos {
   /// The operating system version
   static String get operatingSystemVersion =>
       kIsWeb ? 'Unknown' : Platform.operatingSystemVersion;
+
+  /// Gets client name based on the application name and platform
+  static String get clientName =>
+      '${AppConfig.applicationName} ${isWeb ? 'web' : Platform.operatingSystem}${kReleaseMode ? '' : 'Debug'}';
 
   /// Gets package information
   static Future<PackageInfo> get packageInfo async {

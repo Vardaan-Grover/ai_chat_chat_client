@@ -3,18 +3,13 @@ import 'package:ai_chat_chat_client/services/platform/platform_infos.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:matrix/matrix.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class MyMatrixWidget extends ConsumerStatefulWidget {
   final Widget child;
-  final List<Client> clients;
-  final SharedPreferences store;
 
   const MyMatrixWidget({
     super.key,
     required this.child,
-    required this.clients,
-    required this.store,
   });
 
   @override

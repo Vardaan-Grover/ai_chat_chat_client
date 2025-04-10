@@ -1,6 +1,9 @@
 import 'package:ai_chat_chat_client/services/matrix/client_manager.dart';
 import 'package:ai_chat_chat_client/services/log/logging_service.dart';
 import 'package:ai_chat_chat_client/services/matrix/matrix_providers.dart';
+import 'package:ai_chat_chat_client/viewmodels/login.dart';
+import 'package:ai_chat_chat_client/views/layouts/login_scaffold.dart';
+import 'package:ai_chat_chat_client/views/screens/login_view.dart';
 import 'package:ai_chat_chat_client/views/widgets/my_matrix_widget.dart';
 
 import 'package:flutter/material.dart';
@@ -28,8 +31,8 @@ void main() async {
         matrixClientsProvider.overrideWith((ref) => clients),
         sharedPreferencesProvider.overrideWith((ref) => store),
       ],
-      child: MyApp(clients: clients, store: store)
-    )
+      child: MyApp(clients: clients, store: store),
+    ),
   );
 }
 
@@ -42,17 +45,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MyMatrixWidget(
-      clients: clients,
-      store: store,
       child: MaterialApp(
         title: 'AI Chat Chat',
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
           useMaterial3: true,
         ),
-        home: const Scaffold(
-          body: Center(child: Text('Welcome to AI Chat Chat!')),
-        ),
+        home: Login(),
       ),
     );
   }
