@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:ai_chat_chat_client/config/app_config.dart';
 import 'package:ai_chat_chat_client/services/matrix/matrix_providers.dart';
 import 'package:ai_chat_chat_client/services/platform/platform_infos.dart';
 import 'package:ai_chat_chat_client/views/screens/login_view.dart';
@@ -32,8 +33,8 @@ class LoginController extends ConsumerState<Login> {
   }
 
   /// Authenticates the user with the Matrix server using the provided credentials.
-  /// 
-  /// This function validates input fields, determines the type of identifier 
+  ///
+  /// This function validates input fields, determines the type of identifier
   /// (email, phone, or username), and attempts to authenticate with the Matrix server.
   /// It handles different authentication scenarios and provides appropriate feedback.
   void login() async {
@@ -60,11 +61,15 @@ class LoginController extends ConsumerState<Login> {
 
     // Begin login process
     setState(() => isLoading = true);
-    
+
     // Cancel any pending homeserver discovery to avoid conflicts
     _coolDown?.cancel();
 
     try {
+      matrix.getLoginClient().homeserver = Uri.parse(
+        'https://${AppConfig.defaultHomeserver}',
+      );
+
       final username = usernameController.text;
       AuthenticationIdentifier identifier;
 
@@ -86,7 +91,7 @@ class LoginController extends ConsumerState<Login> {
         // Extract the username part from the Matrix ID
         final localpart = username.localpart!;
         identifier = AuthenticationUserIdentifier(user: localpart);
-        
+
         // Ensure we're using the correct homeserver for this Matrix ID
         await _checkWellKnown(username);
       } else {
@@ -94,8 +99,10 @@ class LoginController extends ConsumerState<Login> {
         identifier = AuthenticationUserIdentifier(user: username);
       }
 
-      logger.info('Attempting to authenticate with server: ${matrix.getLoginClient().homeserver}');
-      
+      logger.info(
+        'Attempting to authenticate with server: ${matrix.getLoginClient().homeserver}',
+      );
+
       // Perform the actual login request
       await matrix.getLoginClient().login(
         LoginType.mLoginPassword,
@@ -103,7 +110,7 @@ class LoginController extends ConsumerState<Login> {
         password: passwordController.text,
         initialDeviceDisplayName: PlatformInfos.clientName,
       );
-      
+
       logger.info('Login successful');
     } on MatrixException catch (e) {
       logger.warning('Login failed: Matrix exception: ${e.errorMessage}');
@@ -111,7 +118,11 @@ class LoginController extends ConsumerState<Login> {
       return setState(() => isLoading = false);
     } on TimeoutException catch (e) {
       logger.severe('Login timed out: ${e.toString()}');
-      setState(() => passwordError = 'Connection timed out. Please check your internet connection.');
+      setState(
+        () =>
+            passwordError =
+                'Connection timed out. Please check your internet connection.',
+      );
       return setState(() => isLoading = false);
     } catch (e) {
       logger.severe('Login failed: Unknown error: ${e.toString()}');
@@ -139,35 +150,34 @@ class LoginController extends ConsumerState<Login> {
     }
 
     logger.fine('Scheduling well-known check for: $userId');
-    
+
     // Cancel any pending timer to implement debouncing
     _coolDown?.cancel();
-    
+
     // Schedule a new check after cooldown period
-    _coolDown = Timer(
-      const Duration(seconds: 1),
-      () {
-        logger.fine('Cooldown complete, performing well-known check for: $userId');
-        _checkWellKnown(userId);
-      },
-    );
+    _coolDown = Timer(const Duration(seconds: 1), () {
+      logger.fine(
+        'Cooldown complete, performing well-known check for: $userId',
+      );
+      _checkWellKnown(userId);
+    });
   }
 
   /// Checks the well-known information for a given Matrix user ID to determine
   /// the correct homeserver URL.
-  /// 
+  ///
   /// This function performs a discovery process to find the appropriate homeserver
   /// for the user based on their domain. It follows the Matrix specification for
   /// server discovery via .well-known endpoints.
-  /// 
+  ///
   /// @param userId The Matrix user ID to check (format: @username:domain.tld)
   Future<void> _checkWellKnown(String userId) async {
     final matrix = ref.read(matrixServiceProvider);
-    
+
     if (mounted) {
       setState(() => usernameError = null);
     }
-    
+
     // Only proceed if we have a valid Matrix ID
     if (!userId.isValidMatrixId) {
       logger.fine('Invalid Matrix ID format: $userId');
@@ -175,23 +185,23 @@ class LoginController extends ConsumerState<Login> {
     }
 
     logger.info('Starting well-known discovery for domain: ${userId.domain}');
-    
+
     // Store the current homeserver to revert back if needed
     final originalHomeserver = matrix.getLoginClient().homeserver;
-    
+
     try {
       // Start by assuming the homeserver is at the same domain as the user ID
       var targetHomeserver = Uri.https(userId.domain!, '');
       logger.fine('Initial homeserver guess: $targetHomeserver');
-      
+
       // Set to the guessed homeserver temporarily to perform well-known lookup
       matrix.getLoginClient().homeserver = targetHomeserver;
-      
+
       // Try to get .well-known information
       try {
         logger.fine('Fetching well-known information from $targetHomeserver');
         final wellKnownInfo = await matrix.getLoginClient().getWellknown();
-        
+
         // Use the homeserver URL from well-known if available
         final wellKnownUrl = wellKnownInfo.mHomeserver.baseUrl.toString();
         if (wellKnownUrl.isNotEmpty) {
@@ -200,19 +210,23 @@ class LoginController extends ConsumerState<Login> {
         }
       } catch (e) {
         // Continue with our initial guess if well-known lookup fails
-        logger.warning('Well-known lookup failed: ${e.toString()}. Proceeding with initial domain guess.');
+        logger.warning(
+          'Well-known lookup failed: ${e.toString()}. Proceeding with initial domain guess.',
+        );
       }
-      
+
       // Only make changes if we have a different homeserver than before
       if (targetHomeserver != originalHomeserver) {
         logger.info('Testing homeserver at: $targetHomeserver');
-        
+
         // Verify if the target is actually a Matrix homeserver
         await matrix.getLoginClient().checkHomeserver(targetHomeserver);
-        
+
         if (matrix.getLoginClient().homeserver == null) {
           // The server doesn't appear to be a Matrix homeserver
-          logger.warning('$targetHomeserver is not a valid Matrix homeserver, reverting to $originalHomeserver');
+          logger.warning(
+            '$targetHomeserver is not a valid Matrix homeserver, reverting to $originalHomeserver',
+          );
           matrix.getLoginClient().homeserver = originalHomeserver;
         } else {
           logger.info('Successfully changed homeserver to: $targetHomeserver');
@@ -221,16 +235,18 @@ class LoginController extends ConsumerState<Login> {
         // No change needed
         logger.fine('Homeserver unchanged, staying with: $originalHomeserver');
       }
-      
+
       // Update the UI if we're still mounted
       if (mounted) setState(() {});
     } catch (e) {
       // Handle any errors and revert to original homeserver
       logger.severe('Error during homeserver discovery: ${e.toString()}');
       matrix.getLoginClient().homeserver = originalHomeserver;
-      
+
       if (mounted) {
-        setState(() => usernameError = 'Server discovery failed: ${e.toString()}');
+        setState(
+          () => usernameError = 'Server discovery failed: ${e.toString()}',
+        );
       }
     }
   }

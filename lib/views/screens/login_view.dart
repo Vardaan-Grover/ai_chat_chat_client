@@ -13,78 +13,75 @@ class LoginView extends StatelessWidget {
     final theme = Theme.of(context);
     final matrix = controller.ref.read(matrixServiceProvider);
 
-    final homeserver = matrix
-        .getLoginClient()
-        .homeserver
-        .toString()
-        .replaceFirst('https://', '');
-    final title = 'Log in to $homeserver';
-    final titleParts = title.split(homeserver);
-
     return LoginScaffold(
       enforceMobileMode: matrix.client.isLogged(),
       appBar: AppBar(
-        leading:
-            controller.isLoading ? null : const Center(child: BackButton()),
         automaticallyImplyLeading: !controller.isLoading,
         titleSpacing: !controller.isLoading ? 0 : null,
         title: Text.rich(
           TextSpan(
             children: [
-              TextSpan(text: titleParts.first),
+              TextSpan(text: 'Login to '),
               TextSpan(
-                text: homeserver,
+                text: 'AI Chat Chat',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              TextSpan(text: titleParts.last),
             ]),
             style: const TextStyle(fontSize: 18),
         ),
       ),
       body: Builder(builder: (context) {
         return AutofillGroup(
-          child: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            children: <Widget>[
-              Hero(
-                tag: 'info-logo',
-                child: Text("AI CHAT CHAT"),
-              ),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: TextField(
-                  controller: controller.usernameController,
-                  readOnly: controller.isLoading,
-                  decoration: InputDecoration(
-                    labelText: 'Username or email',
-                    border: OutlineInputBorder(),
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: ListView(
+              shrinkWrap: true,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+              children: <Widget>[
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: TextField(
+                    controller: controller.usernameController,
+                    readOnly: controller.isLoading,
+                    decoration: InputDecoration(
+                      labelText: 'Username or email',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: TextField(
-                  controller: controller.passwordController,
-                  readOnly: controller.isLoading,
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    border: OutlineInputBorder(),
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: TextField(
+                    controller: controller.passwordController,
+                    readOnly: controller.isLoading,
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      border: OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          controller.showPassword
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                        ),
+                        onPressed: controller.toggleShowPassword,
+                      ),
+                    ),
+                    obscureText: !controller.showPassword,
                   ),
-                  obscureText: !controller.showPassword,
                 ),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed:
-                    controller.isLoading ? null : controller.login,
-                child:
-                    Text(controller.isLoading ? 'Loading...' : 'Log in'),
-              ),
-            ],
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed:
+                      controller.isLoading ? null : controller.login,
+                  child:
+                      Text(controller.isLoading ? 'Loading...' : 'Log in'),
+                ),
+              ],
+            ),
           ),
         );
       })

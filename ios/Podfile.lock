@@ -9,6 +9,8 @@ PODS:
     - OpenSSL-Universal
   - flutter_secure_storage (6.0.0):
     - Flutter
+  - flutter_web_auth_2 (3.0.0):
+    - Flutter
   - OpenSSL-Universal (3.3.3000)
   - package_info_plus (0.4.5):
     - Flutter
@@ -38,6 +40,7 @@ DEPENDENCIES:
   - flutter_olm (from `.symlinks/plugins/flutter_olm/ios`)
   - flutter_openssl_crypto (from `.symlinks/plugins/flutter_openssl_crypto/ios`)
   - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
+  - flutter_web_auth_2 (from `.symlinks/plugins/flutter_web_auth_2/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
@@ -61,6 +64,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_openssl_crypto/ios"
   flutter_secure_storage:
     :path: ".symlinks/plugins/flutter_secure_storage/ios"
+  flutter_web_auth_2:
+    :path: ".symlinks/plugins/flutter_web_auth_2/ios"
   package_info_plus:
     :path: ".symlinks/plugins/package_info_plus/ios"
   path_provider_foundation:
@@ -80,6 +85,7 @@ SPEC CHECKSUMS:
   flutter_olm: 00801e1fd3612593dd94c0dbcd2b13397b1a4a08
   flutter_openssl_crypto: 636ad25f56fbe0f45b9e13b8589540b341a486a1
   flutter_secure_storage: d33dac7ae2ea08509be337e775f6b59f1ff45f12
+  flutter_web_auth_2: 06d500582775790a0d4c323222fcb6d7990f9603
   OpenSSL-Universal: d776ce24dab24323e6995dfb17c64d598885d05c
   package_info_plus: c0502532a26c7662a62a356cebe2692ec5fe4ec4
   path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46

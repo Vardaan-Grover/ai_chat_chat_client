@@ -1,9 +1,8 @@
 import 'package:ai_chat_chat_client/services/matrix/client_manager.dart';
 import 'package:ai_chat_chat_client/services/log/logging_service.dart';
 import 'package:ai_chat_chat_client/services/matrix/matrix_providers.dart';
+import 'package:ai_chat_chat_client/viewmodels/homeserver_picker.dart';
 import 'package:ai_chat_chat_client/viewmodels/login.dart';
-import 'package:ai_chat_chat_client/views/layouts/login_scaffold.dart';
-import 'package:ai_chat_chat_client/views/screens/login_view.dart';
 import 'package:ai_chat_chat_client/views/widgets/my_matrix_widget.dart';
 
 import 'package:flutter/material.dart';
@@ -48,10 +47,10 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'AI Chat Chat',
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlue),
           useMaterial3: true,
         ),
-        home: Login(),
+        home: const Login(),
       ),
     );
   }

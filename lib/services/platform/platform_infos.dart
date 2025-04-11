@@ -269,4 +269,58 @@ class PlatformInfos {
         : 'Profile'}
     ''';
   }
+
+  // static Future<String> getVersion() async {
+  //   var version = kIsWeb ? 'Web' : 'Unknown';
+  //   try {
+  //     version = (await PackageInfo.fromPlatform()).version;
+  //   } catch (_) {}
+  //   return version;
+  // }
+
+  // static void showDialog(BuildContext context) async {
+  //   final version = await PlatformInfos.getVersion();
+  //   showAboutDialog(
+  //     context: context,
+  //     children: [
+  //       Text('Version: $version'),
+  //       TextButton.icon(
+  //         onPressed: () => launchUrlString(AppConfig.sourceCodeUrl),
+  //         icon: const Icon(Icons.source_outlined),
+  //         label: Text(L10n.of(context).sourceCode),
+  //       ),
+  //       Builder(
+  //         builder: (innerContext) {
+  //           return TextButton.icon(
+  //             onPressed: () {
+  //               context.go('/logs');
+  //               Navigator.of(innerContext).pop();
+  //             },
+  //             icon: const Icon(Icons.list_outlined),
+  //             label: const Text('Logs'),
+  //           );
+  //         },
+  //       ),
+  //       Builder(
+  //         builder: (innerContext) {
+  //           return TextButton.icon(
+  //             onPressed: () {
+  //               context.go('/configs');
+  //               Navigator.of(innerContext).pop();
+  //             },
+  //             icon: const Icon(Icons.settings_applications_outlined),
+  //             label: const Text('Advanced Configs'),
+  //           );
+  //         },
+  //       ),
+  //     ],
+  //     applicationIcon: Image.asset(
+  //       'assets/logo.png',
+  //       width: 64,
+  //       height: 64,
+  //       filterQuality: FilterQuality.medium,
+  //     ),
+  //     applicationName: AppConfig.applicationName,
+  //   );
+  // }
 }
