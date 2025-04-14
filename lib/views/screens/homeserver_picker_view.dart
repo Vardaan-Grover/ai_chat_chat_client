@@ -1,6 +1,6 @@
 import 'package:ai_chat_chat_client/config/app_config.dart';
 import 'package:ai_chat_chat_client/services/matrix/matrix_providers.dart';
-import 'package:ai_chat_chat_client/viewmodels/homeserver_picker.dart';
+import 'package:ai_chat_chat_client/viewmodels/homeserver_picker_controller.dart';
 import 'package:ai_chat_chat_client/views/layouts/login_scaffold.dart';
 import 'package:ai_chat_chat_client/views/widgets/adaptive_dialogs/adaptive_dialog_action.dart';
 import 'package:flutter/material.dart';

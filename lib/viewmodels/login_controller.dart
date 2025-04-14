@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:ai_chat_chat_client/config/app_config.dart';
 import 'package:ai_chat_chat_client/services/matrix/matrix_providers.dart';
 import 'package:ai_chat_chat_client/services/platform/platform_infos.dart';
+import 'package:ai_chat_chat_client/viewmodels/chat_list_controller.dart';
 import 'package:ai_chat_chat_client/views/screens/login_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -112,6 +113,12 @@ class LoginController extends ConsumerState<Login> {
       );
 
       logger.info('Login successful');
+
+      // if (mounted) {
+      //   Navigator.of(
+      //     context,
+      //   ).push(MaterialPageRoute(builder: (context) => ChatList()));
+      // }
     } on MatrixException catch (e) {
       logger.warning('Login failed: Matrix exception: ${e.errorMessage}');
       setState(() => passwordError = e.errorMessage);

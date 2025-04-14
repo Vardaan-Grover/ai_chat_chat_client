@@ -4,8 +4,8 @@ import 'package:logging/logging.dart';
 // Set this to the company's official name
 const accountBundlesType = 'im.ai_chat_chat.account_bundles';
 
-/// Logger for account bundle operations
-final Logger logger = Logger('ClientAccountBundle');
+/// _logger for account bundle operations
+final Logger _logger = Logger('ClientAccountBundle');
 
 /// Represents a single account bundle containing a name and priority
 class AccountBundle {
@@ -57,7 +57,7 @@ class AccountBundles {
                     try {
                       return AccountBundle.fromJson(b);
                     } catch (e) {
-                      logger.warning('Failed to parse bundle: $e');
+                      _logger.warning('Failed to parse bundle: $e');
                       return null;
                     }
                   })
@@ -78,7 +78,7 @@ extension AccountBundlesExtension on Client {
   /// 
   /// If no bundles exist, creates a default bundle using the client's userID
   List<AccountBundle> get accountBundles {
-    logger.fine('Retrieving account bundles for user: $userID');
+    _logger.fine('Retrieving account bundles for user: $userID');
     List<AccountBundle>? ret;
     
     // Try to load existing bundles from account data
@@ -87,9 +87,9 @@ extension AccountBundlesExtension on Client {
         ret = AccountBundles.fromJson(
           accountData[accountBundlesType]!.content,
         ).bundles;
-        logger.fine('Found ${ret?.length ?? 0} existing account bundles');
+        _logger.fine('Found ${ret?.length ?? 0} existing account bundles');
       } catch (e) {
-        logger.warning('Error parsing account bundles: $e');
+        _logger.warning('Error parsing account bundles: $e');
       }
     }
     
@@ -98,7 +98,7 @@ extension AccountBundlesExtension on Client {
     
     // Create default bundle if list is empty
     if (ret.isEmpty) {
-      logger.info('No account bundles found, creating default bundle for $userID');
+      _logger.info('No account bundles found, creating default bundle for $userID');
       ret.add(AccountBundle(name: userID, priority: 0));
     }
     
@@ -113,10 +113,10 @@ extension AccountBundlesExtension on Client {
   /// 
   /// @return A Future that completes when the operation is finished
   Future<void> setAccountBundle(String name, [int? priority]) async {
-    logger.info('Setting account bundle: $name with priority: $priority');
+    _logger.info('Setting account bundle: $name with priority: $priority');
     
     if (name.isEmpty) {
-      logger.warning('Cannot set account bundle with empty name');
+      _logger.warning('Cannot set account bundle with empty name');
       throw ArgumentError('Bundle name cannot be empty');
     }
     
@@ -131,7 +131,7 @@ extension AccountBundlesExtension on Client {
     // Update existing bundle if found
     for (final bundle in bundles) {
       if (bundle.name == name) {
-        logger.fine('Updating existing bundle: $name');
+        _logger.fine('Updating existing bundle: $name');
         bundle.priority = priority;
         foundBundle = true;
         break;
@@ -140,16 +140,16 @@ extension AccountBundlesExtension on Client {
     
     // Add new bundle if not found
     if (!foundBundle) {
-      logger.fine('Adding new bundle: $name');
+      _logger.fine('Adding new bundle: $name');
       bundles.add(AccountBundle(name: name, priority: priority));
     }
     
     try {
       // Save changes to account data
       await setAccountData(userID!, accountBundlesType, data.toJson());
-      logger.info('Successfully saved account bundle: $name');
+      _logger.info('Successfully saved account bundle: $name');
     } catch (e) {
-      logger.severe('Failed to save account bundle: $e');
+      _logger.severe('Failed to save account bundle: $e');
       rethrow;
     }
   }
@@ -159,11 +159,11 @@ extension AccountBundlesExtension on Client {
   /// @param name The name identifier of the bundle to remove
   /// @return A Future that completes when the operation is finished
   Future<void> removeFromAccountBundle(String name) async {
-    logger.info('Removing from account bundle: $name');
+    _logger.info('Removing from account bundle: $name');
     
     // Nothing to do if no account bundles exist
     if (!accountData.containsKey(accountBundlesType)) {
-      logger.fine('No account bundles exist, nothing to remove');
+      _logger.fine('No account bundles exist, nothing to remove');
       return;
     }
     
@@ -172,7 +172,7 @@ extension AccountBundlesExtension on Client {
     );
     
     if (data.bundles == null) {
-      logger.fine('No bundles in account data, nothing to remove');
+      _logger.fine('No bundles in account data, nothing to remove');
       return;
     }
     
@@ -183,13 +183,13 @@ extension AccountBundlesExtension on Client {
     if (data.bundles!.length < initialCount) {
       try {
         await setAccountData(userID!, accountBundlesType, data.toJson());
-        logger.info('Successfully removed bundle: $name');
+        _logger.info('Successfully removed bundle: $name');
       } catch (e) {
-        logger.severe('Failed to remove account bundle: $e');
+        _logger.severe('Failed to remove account bundle: $e');
         rethrow;
       }
     } else {
-      logger.fine('Bundle $name not found, nothing removed');
+      _logger.fine('Bundle $name not found, nothing removed');
     }
   }
 
@@ -204,7 +204,7 @@ extension AccountBundlesExtension on Client {
       
       return data.prefix ?? '';
     } catch (e) {
-      logger.warning('Error retrieving send prefix: $e');
+      _logger.warning('Error retrieving send prefix: $e');
       return '';
     }
   }

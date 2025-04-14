@@ -4,6 +4,7 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   desktop_webview_window
+  dynamic_color
   flutter_secure_storage_linux
   sqlcipher_flutter_libs
   url_launcher_linux

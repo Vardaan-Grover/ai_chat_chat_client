@@ -1,65 +1,71 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ai_chat_chat_client/services/platform/platform_infos.dart';
-import 'package:ai_chat_chat_client/services/matrix/matrix_providers.dart';
-import 'package:matrix/matrix.dart';
 
-class AIChatChatApp extends ConsumerStatefulWidget {
-  const AIChatChatApp({super.key});
+import 'config/app_config.dart';
+import 'services/theme/themes.dart';
+import 'views/widgets/custom_scroll_behavior.dart';
+import 'views/widgets/my_matrix_widget.dart';
+import 'views/widgets/theme_builder.dart';
+import 'services/router_provider.dart';
 
-  @override
-  ConsumerState<AIChatChatApp> createState() => _AIChatChatAppState();
-}
+class AiChatChatApp extends ConsumerWidget {
+  const AiChatChatApp({super.key});
 
-class _AIChatChatAppState extends ConsumerState<AIChatChatApp>
-    with WidgetsBindingObserver {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-  }
+  /// getInitialLink may rereturn the value multiple times if this view is
+  /// opened multiple times for example if the user logs out after they logged
+  /// in with qr code or magic link.
+  static bool gotInitialLink = false;
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Get the active client from the provider
-    final client = ref.read(clientProvider);
-
-    // Determine if the app is in the foreground
-    final foreground =
-        state != AppLifecycleState.inactive &&
-        state != AppLifecycleState.paused;
-
-    // Update presence based on app state
-    client.syncPresence =
-        state == AppLifecycleState.resumed ? null : PresenceType.unavailable;
-
-    // Configure sync behavior for mobile platforms
-    if (PlatformInfos.isMobile) {
-      // Disable background sync when app is in foreground
-      client.backgroundSync = !foreground;
-
-      // Only request history on limited timeline when in background
-      client.requestHistoryOnLimitedTimeline = !foreground;
-    }
-  }
+  // Router must be outside of build method so that hot reload does not reset
+  // the current path.
+  // static final GoRouter router = GoRouter(
+  //   routes: AppRoutes.routes,
+  //   debugLogDiagnostics: true,
+  // );
 
   @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(routerProvider);
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'AI Chat Chat',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        useMaterial3: true,
-      ),
-      home: const Scaffold(
-        body: Center(child: Text('Welcome to AI Chat Chat!')),
-      ),
+    return ThemeBuilder(
+      builder:
+          (context, themeMode, primaryColor) => MaterialApp.router(
+            title: AppConfig.applicationName,
+            themeMode: themeMode,
+            theme: AIChatChatThemes.buildTheme(
+              context,
+              Brightness.light,
+              primaryColor,
+            ),
+            darkTheme: AIChatChatThemes.buildTheme(
+              context,
+              Brightness.dark,
+              primaryColor,
+            ),
+            scrollBehavior: CustomScrollBehavior(),
+            routerConfig: router,
+            builder: (context, child) => MyMatrixWidget(child: child),
+          ),
     );
+
+    // return ThemeBuilder(
+    //   builder:
+    //       (context, themeMode, primaryColor) => MaterialApp(
+    //         title: AppConfig.applicationName,
+    //         themeMode: themeMode,
+    //         theme: AIChatChatThemes.buildTheme(
+    //           context,
+    //           Brightness.light,
+    //           primaryColor,
+    //         ),
+    //         darkTheme: AIChatChatThemes.buildTheme(
+    //           context,
+    //           Brightness.dark,
+    //           primaryColor,
+    //         ),
+    //         scrollBehavior: CustomScrollBehavior(),
+    //         home: const MyMatrixWidget(child: Login()),
+    //       ),
+    // );
   }
 }

@@ -1,14 +1,8 @@
 import 'package:ai_chat_chat_client/services/matrix/matrix_service.dart';
-import 'package:ai_chat_chat_client/services/platform/platform_infos.dart';
+import 'package:ai_chat_chat_client/services/providers.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:matrix/matrix.dart';
 import 'package:riverpod/riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-/// Provider for SharedPreferences instance
-final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
-  throw UnimplementedError('Initialize this provider before use');
-});
 
 /// Provider for Matrix clients list
 final matrixClientsProvider = StateProvider<List<Client>>((ref) => []);

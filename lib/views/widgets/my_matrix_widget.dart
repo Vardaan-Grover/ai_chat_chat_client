@@ -5,11 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:matrix/matrix.dart';
 
 class MyMatrixWidget extends ConsumerStatefulWidget {
-  final Widget child;
+  final Widget? child;
 
   const MyMatrixWidget({
     super.key,
-    required this.child,
+    this.child,
   });
 
   @override
@@ -73,6 +73,6 @@ class _MyMatrixWidgetState extends ConsumerState<MyMatrixWidget>
 
   @override
   Widget build(BuildContext context) {
-    return widget.child;
+    return widget.child ?? const SizedBox.shrink();
   }
 }

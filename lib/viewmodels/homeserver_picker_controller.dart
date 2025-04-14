@@ -1,6 +1,6 @@
 import 'package:ai_chat_chat_client/services/matrix/matrix_providers.dart';
 import 'package:ai_chat_chat_client/services/platform/platform_infos.dart';
-import 'package:ai_chat_chat_client/viewmodels/login.dart';
+import 'package:ai_chat_chat_client/viewmodels/login_controller.dart';
 import 'package:ai_chat_chat_client/views/screens/homeserver_picker_view.dart';
 import 'package:ai_chat_chat_client/views/widgets/adaptive_dialogs/show_ok_cancel_alert_dialog.dart';
 import 'package:flutter/material.dart';

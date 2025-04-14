@@ -1,5 +1,5 @@
 import 'package:ai_chat_chat_client/services/matrix/matrix_providers.dart';
-import 'package:ai_chat_chat_client/viewmodels/login.dart';
+import 'package:ai_chat_chat_client/viewmodels/login_controller.dart';
 import 'package:ai_chat_chat_client/views/layouts/login_scaffold.dart';
 import 'package:flutter/material.dart';
 

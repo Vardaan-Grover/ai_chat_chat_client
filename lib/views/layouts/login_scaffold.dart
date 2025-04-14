@@ -1,5 +1,5 @@
 import 'package:ai_chat_chat_client/config/app_config.dart';
-import 'package:ai_chat_chat_client/config/themes.dart';
+import 'package:ai_chat_chat_client/services/theme/themes.dart';
 import 'package:flutter/material.dart';
 
 import 'package:url_launcher/url_launcher_string.dart';
