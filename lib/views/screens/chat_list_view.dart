@@ -4,7 +4,7 @@ import 'package:matrix/matrix.dart';
 
 import '../../viewmodels/chat_list_controller.dart';
 import '../../services/matrix/matrix_providers.dart';
-import '../../services/stream_extension.dart';
+import '../../services/extensions/stream_extension.dart';
 
 class ChatListView extends ConsumerWidget {
   final ChatListController controller;

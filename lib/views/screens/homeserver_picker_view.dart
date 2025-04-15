@@ -2,7 +2,7 @@ import 'package:ai_chat_chat_client/config/app_config.dart';
 import 'package:ai_chat_chat_client/services/matrix/matrix_providers.dart';
 import 'package:ai_chat_chat_client/viewmodels/homeserver_picker_controller.dart';
 import 'package:ai_chat_chat_client/views/layouts/login_scaffold.dart';
-import 'package:ai_chat_chat_client/views/widgets/adaptive_dialogs/adaptive_dialog_action.dart';
+import 'package:ai_chat_chat_client/views/widgets/dialogs/adaptive_dialog_action.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:url_launcher/url_launcher.dart';

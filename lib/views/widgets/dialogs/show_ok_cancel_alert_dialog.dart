@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
-import './adaptive_dialog_action.dart';
+import 'adaptive_dialog_action.dart';
 
 enum OkCancelResult { ok, cancel }
 

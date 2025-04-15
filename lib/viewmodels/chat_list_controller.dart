@@ -1,12 +1,15 @@
 import 'dart:async';
 
 import 'package:ai_chat_chat_client/services/matrix/matrix_providers.dart';
+import 'package:ai_chat_chat_client/services/platform/platform_infos.dart';
 import 'package:ai_chat_chat_client/views/screens/chat_list_view.dart';
+import 'package:ai_chat_chat_client/views/widgets/dialogs/show_scaffold_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:matrix/matrix.dart';
+import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
 class ChatList extends ConsumerStatefulWidget {
   final String? activeChat;
@@ -31,15 +34,45 @@ class ChatListController extends ConsumerState<ChatList> {
   final ValueNotifier<bool> scrolledToTop = ValueNotifier(false);
 
   final StreamController<Client> _clientStream = StreamController.broadcast();
+  StreamSubscription? _intentDataStreamSubscription;
+  StreamSubscription? _intentFilStreamSubscription;
+  StreamSubscription? _intentUriStreamSubscription;
 
-  String? activeSpaceId;
+  bool isSearching = false;
+  bool isSearchMode = false;
+  Timer? _coolDownTimer;
+  SearchResults? userSearchResult;
+  QueryPublicRoomsResponse? roomSearchResult;
+  final TextEditingController searchController = TextEditingController();
+  final FocusNode searchFocusNode = FocusNode();
+
+  String? _activeSpaceId;
   ActiveFilter activeFilter = ActiveFilter.all;
   bool waitForFirstSync = false;
 
+  String? get activeSpaceId => _activeSpaceId;
   Stream<Client> get clientStream => _clientStream.stream;
   List<Room> get filteredRooms {
     final rooms = ref.read(clientProvider).rooms;
     return rooms.where(getFilteredRoomsByActiveFilter(activeFilter)).toList();
+  }
+
+  List<Room> get spaces =>
+      ref.read(clientProvider).rooms.where((r) => r.isSpace).toList();
+  String? get activeChat => widget.activeChat;
+
+  bool get displayBundles {
+    final matrix = ref.read(matrixServiceProvider);
+    return matrix.hasComplexBundles && matrix.accountBundles.keys.length > 1;
+  }
+
+  String? get secureActiveBundle {
+    final matrix = ref.read(matrixServiceProvider);
+    if (matrix.activeBundle == null ||
+        !matrix.accountBundles.keys.contains(matrix.activeBundle)) {
+      return matrix.accountBundles.keys.first;
+    }
+    return matrix.activeBundle;
   }
 
   bool Function(Room) getFilteredRoomsByActiveFilter(ActiveFilter filter) {
@@ -54,6 +87,22 @@ class ChatListController extends ConsumerState<ChatList> {
         return (room) => !room.isSpace && !room.isDirectChat;
     }
   }
+
+  // TODO: implement later
+
+  // void _processIncomingSharedMedia(List<SharedMediaFile> files) {
+  //   if (files.isEmpty) return;
+
+  //   showScaffoldDialog(context: context, builder: (context) => )
+  // }
+
+  // void _initReceiveSharingIntent() {
+  //   if (!PlatformInfos.isMobile) return;
+
+  //   _intentFilStreamSubscription = ReceiveSharingIntent.instance
+  //       .getMediaStream()
+  //       .listen(_processIncomingSharedMedia, onError: print);
+  // }
 
   void _onScroll() {
     final newScrolledToTop = scrollController.position.pixels <= 0;
@@ -189,13 +238,13 @@ class ChatListController extends ConsumerState<ChatList> {
       return;
     }
     setState(() {
-      activeSpaceId = spaceId;
+      _activeSpaceId = spaceId;
     });
   }
 
   void clearActiveSpace() {
     logger.fine('Clearing active space, setting it to null');
-    setState(() => activeSpaceId = null);
+    setState(() => _activeSpaceId = null);
   }
 
   void setActiveFilter(ActiveFilter filter) {
@@ -213,6 +262,21 @@ class ChatListController extends ConsumerState<ChatList> {
     });
     matrix.setActiveClient(client);
     _clientStream.add(client);
+  }
+
+  void setActiveBundle(String bundle) {
+    // TODO: route to rooms
+
+    final client = ref.read(clientProvider);
+    final matrix = ref.read(matrixServiceProvider);
+
+    setState(() {
+      _activeSpaceId = null;
+      matrix.activeBundle = bundle;
+      if (matrix.currentBundle!.any((c) => c == client)) {
+        matrix.setActiveClient(matrix.currentBundle!.first);
+      }
+    });
   }
 
   void onChatTap(Room room) async {
@@ -252,6 +316,162 @@ class ChatListController extends ConsumerState<ChatList> {
     // TODO: route to chat screen
   }
 
+  /// Performs a search operation using the current text in the searchController.
+  ///
+  /// Searches for both public rooms and room events that match the search query.
+  /// Updates the UI state throughout the search process to provide visual feedback.
+  /// Handles edge cases like Matrix room aliases and potential errors.
+  Future<void> _search() async {
+    final client = ref.read(clientProvider);
+    final searchQuery = searchController.text.trim();
+
+    logger.info('Starting search for query: "$searchQuery"');
+
+    // Update UI to show search is in progress
+    if (!isSearching) {
+      setState(() {
+        isSearching = true;
+      });
+    }
+
+    try {
+      // Search for public rooms matching the query
+      logger.fine('Querying public rooms with filter: $searchQuery');
+      final roomSearchResult = await client.queryPublicRooms(
+        filter: PublicRoomQueryFilter(genericSearchTerm: searchQuery),
+        limit: 25,
+        includeAllNetworks: true,
+      );
+      logger.fine(
+        'Found ${roomSearchResult.chunk.length} public rooms matching query',
+      );
+
+      // Handle special case for Matrix room aliases
+      // If the search is a valid room alias but wasn't found in the initial search results,
+      // try to resolve it directly
+      if (searchQuery.isValidMatrixId &&
+          searchQuery.sigil == '#' &&
+          !roomSearchResult.chunk.any(
+            (room) => room.canonicalAlias == searchQuery,
+          )) {
+        logger.fine(
+          'Search query appears to be a room alias, attempting to resolve: $searchQuery',
+        );
+        try {
+          final response = await client.getRoomIdByAlias(searchQuery);
+          final roomId = response.roomId;
+          if (roomId != null) {
+            logger.fine('Successfully resolved room alias to ID: $roomId');
+            roomSearchResult.chunk.add(
+              PublicRoomsChunk(
+                name: searchQuery,
+                guestCanJoin: false,
+                numJoinedMembers: 0,
+                roomId: roomId,
+                worldReadable: false,
+                canonicalAlias: searchQuery,
+              ),
+            );
+          }
+        } catch (e) {
+          logger.warning('Failed to resolve room alias: $searchQuery', e);
+          // We continue the search even if alias resolution fails
+        }
+      }
+
+      // Search for room events/messages matching the query
+      logger.fine('Searching for room events matching query: $searchQuery');
+      final userSearchResult = await client.search(
+        Categories(
+          roomEvents: RoomEventsCriteria(
+            searchTerm: searchQuery,
+            orderBy: SearchOrder.recent,
+            groupings: Groupings(groupBy: [Group(key: GroupKey.roomId)]),
+            filter: SearchFilter(limit: 25),
+          ),
+        ),
+      );
+      logger.fine('Room event search completed');
+
+      // Only update the state if we're still in search mode and the widget is mounted
+      if (mounted && isSearchMode) {
+        setState(() {
+          isSearching = false;
+          this.roomSearchResult = roomSearchResult;
+          this.userSearchResult = userSearchResult;
+        });
+        logger.info('Search completed successfully, updated UI with results');
+      } else {
+        logger.fine(
+          'Search completed but UI update skipped (widget not mounted or search mode exited)',
+        );
+      }
+    } catch (e, stackTrace) {
+      logger.severe('Error during search operation', e, stackTrace);
+
+      // Only show error if widget is still mounted
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Search failed: ${e.toString()}'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+
+      // Reset search state
+      if (mounted && isSearchMode) {
+        setState(() {
+          isSearching = false;
+        });
+      }
+    }
+  }
+
+  void onSearchEnter(String text, {bool globalSearch = true}) {
+    setState(() {
+      isSearchMode = true;
+    });
+    _coolDownTimer?.cancel();
+    if (globalSearch) {
+      _coolDownTimer = Timer(const Duration(milliseconds: 500), _search);
+    }
+  }
+
+  void startSearch() {
+    if (!isSearchMode) {
+      setState(() {
+        isSearchMode = true;
+      });
+    }
+    searchFocusNode.requestFocus();
+    _coolDownTimer?.cancel();
+    _coolDownTimer = Timer(const Duration(milliseconds: 500), _search);
+  }
+
+  void cancelSearch({bool unfocus = true}) {
+    setState(() {
+      searchController.clear();
+      isSearchMode = false;
+      roomSearchResult = userSearchResult = null;
+      isSearching = false;
+    });
+    if (unfocus) searchFocusNode.unfocus();
+  }
+
+  void resetActiveBundle() {
+    WidgetsBinding.instance.addPostFrameCallback((timestamp) {
+      final matrix = ref.read(matrixServiceProvider);
+      matrix.activeBundle = null;
+    });
+  }
+
+  Future<void> dehydrate() {
+    final matrix = ref.read(matrixServiceProvider);
+    return matrix.dehydrateAction(context);
+  }
+
   @override
   void initState() {
     scrollController.addListener(_onScroll);
@@ -273,6 +493,14 @@ class ChatListController extends ConsumerState<ChatList> {
     scrollController.removeListener(_onScroll);
     scrollController.dispose();
     _clientStream.close();
+
+    _intentDataStreamSubscription?.cancel();
+    _intentFilStreamSubscription?.cancel();
+    _intentUriStreamSubscription?.cancel();
+
+    searchController.dispose();
+    searchFocusNode.dispose();
+
     super.dispose();
   }
 

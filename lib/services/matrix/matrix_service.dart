@@ -1,4 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:ai_chat_chat_client/services/matrix/matrix_file_extension.dart';
+import 'package:ai_chat_chat_client/views/widgets/dialogs/future_loading_dialog.dart';
+import 'package:ai_chat_chat_client/views/widgets/dialogs/show_ok_cancel_alert_dialog.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../../config/app_config.dart';
 import './account_bundle.dart';
@@ -422,6 +430,36 @@ class MatrixService {
     } else {
       // TODO: If state == LoginState.loggedIn, go to rooms view/screen, else go to home view/screen
     }
+  }
+
+  Future<void> dehydrateAction(BuildContext context) async {
+    final response = await showOkCancelAlertDialog(
+      context: context,
+      title: 'Export session and wipe device?',
+      message:
+          'This action cannot be undone. Ensure you safely store the backup file',
+    );
+    if (response != OkCancelResult.ok) {
+      logger.info("User cancelled the dehydrate action");
+      return;
+    }
+    final result = await showFutureLoadingDialog(
+      context: context,
+      future: client.exportDump,
+    );
+    final export = result.result;
+    if (export == null) {
+      logger.warning("Failed to export session dump");
+      return;
+    }
+
+    final exportBytes = Uint8List.fromList(const Utf8Codec().encode(export));
+
+    final exportFileName =
+        'ai-chat-chat-export-${DateFormat(DateFormat.YEAR_MONTH_DAY).format(DateTime.now())}.aichatchatbackup';
+
+    final file = MatrixFile(bytes: exportBytes, name: exportFileName);
+    file.save(context);
   }
 
   void dispose() {
