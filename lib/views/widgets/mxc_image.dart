@@ -173,6 +173,9 @@ class _MxcImageState extends ConsumerState<MxcImage> {
                 },
               )
               : SizedBox(width: widget.width, height: widget.height),
+      layoutBuilder: (topChild, topChildKey, bottomChild, bottomChildKey) {
+        return topChild;
+      },
     );
   }
 }

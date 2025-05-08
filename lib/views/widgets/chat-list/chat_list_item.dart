@@ -113,27 +113,27 @@ class ChatListItem extends StatelessWidget {
                                 height: Avatar.defaultSize,
                                 child: Stack(
                                   children: [
-                                    if (space != null)
-                                      Positioned(
-                                        top: 0,
-                                        left: 0,
-                                        child: Avatar(
-                                          border: BorderSide(
-                                            width: 2,
-                                            color:
-                                                backgroundColor ??
-                                                theme.colorScheme.surface,
-                                          ),
-                                          borderRadius: BorderRadius.circular(
-                                            AppConfig.borderRadius / 4,
-                                          ),
-                                          mxContent: space.avatar,
-                                          size: Avatar.defaultSize * 0.75,
-                                          name: space.getLocalizedDisplayname(),
-                                          onTap:
-                                              () => onLongPress?.call(context),
-                                        ),
-                                      ),
+                                    // if (space != null)
+                                    //   Positioned(
+                                    //     top: 0,
+                                    //     left: 0,
+                                    //     child: Avatar(
+                                    //       border: BorderSide(
+                                    //         width: 2,
+                                    //         color:
+                                    //             backgroundColor ??
+                                    //             theme.colorScheme.surface,
+                                    //       ),
+                                    //       borderRadius: BorderRadius.circular(
+                                    //         AppConfig.borderRadius / 4,
+                                    //       ),
+                                    //       mxContent: space.avatar,
+                                    //       size: Avatar.defaultSize * 0.75,
+                                    //       name: space.getLocalizedDisplayname(),
+                                    //       onTap:
+                                    //           () => onLongPress?.call(context),
+                                    //     ),
+                                    //   ),
                                     Positioned(
                                       bottom: 0,
                                       right: 0,
@@ -159,10 +159,7 @@ class ChatListItem extends StatelessWidget {
                                                 )
                                                 : null,
                                         mxContent: room.avatar,
-                                        size:
-                                            space != null
-                                                ? Avatar.defaultSize * 0.75
-                                                : Avatar.defaultSize,
+                                        size: Avatar.defaultSize,
                                         name: displayName,
                                         presenceUserId: directChatMatrixId,
                                         presenceBackgroundColor:
@@ -307,8 +304,12 @@ class ChatListItem extends StatelessWidget {
                                       ),
                                       future:
                                           needLastEventSender
-                                              ? Future.value(lastEvent.calcUnlocalizedBody()) : null,
-                                      initialData: lastEvent?.calcUnlocalizedBody(),
+                                              ? Future.value(
+                                                lastEvent.calcUnlocalizedBody(),
+                                              )
+                                              : null,
+                                      initialData:
+                                          lastEvent?.calcUnlocalizedBody(),
                                       builder:
                                           (context, snapshot) => Text(
                                             room.membership == Membership.invite
@@ -324,8 +325,7 @@ class ChatListItem extends StatelessWidget {
                                                     (isDirectChat
                                                         ? 'New Chat'
                                                         : 'Invite Group Chat')
-                                                : snapshot.data ??
-                                                    'Empty Chat',
+                                                : snapshot.data ?? 'Empty Chat',
                                             softWrap: false,
                                             maxLines:
                                                 room.notificationCount >= 1

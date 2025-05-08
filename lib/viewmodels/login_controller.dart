@@ -7,6 +7,7 @@ import 'package:ai_chat_chat_client/viewmodels/chat_list_controller.dart';
 import 'package:ai_chat_chat_client/views/screens/login_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart';
 import 'package:matrix/matrix.dart';
 
@@ -114,11 +115,9 @@ class LoginController extends ConsumerState<Login> {
 
       logger.info('Login successful');
 
-      // if (mounted) {
-      //   Navigator.of(
-      //     context,
-      //   ).push(MaterialPageRoute(builder: (context) => ChatList()));
-      // }
+      if (mounted) {
+        context.go('/rooms');
+      }
     } on MatrixException catch (e) {
       logger.warning('Login failed: Matrix exception: ${e.errorMessage}');
       setState(() => passwordError = e.errorMessage);

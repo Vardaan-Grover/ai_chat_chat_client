@@ -14,7 +14,7 @@ abstract class AIChatChatThemes {
 
   /// Standard animation duration used throughout the app
   static const Duration animationDuration = Duration(milliseconds: 250);
-  
+
   /// Standard animation curve used throughout the app
   static const Curve animationCurve = Curves.easeInOut;
 
@@ -22,7 +22,7 @@ abstract class AIChatChatThemes {
   ///
   /// Returns true when the width can accommodate two columns plus the navigation rail
   static bool isColumnModeByWidth(double width) =>
-      width > columnWidth * 2 + navRailWidth;
+      width > columnWidth * 3 + navRailWidth;
 
   /// Determines if the current screen size should use column mode
   ///
@@ -74,28 +74,30 @@ abstract class AIChatChatThemes {
       brightness: brightness,
       seedColor: seed ?? AppConfig.colorSchemeSeed ?? AppConfig.primaryColor,
     );
-    
+
     // Determine the current layout mode
     final isColumnMode = AIChatChatThemes.isColumnMode(context);
-    
+
     return ThemeData(
+      fontFamily: 'SF Pro Rounded',
       visualDensity: VisualDensity.standard,
       useMaterial3: true,
       brightness: brightness,
       colorScheme: colorScheme,
-      
+
       // Configure divider color based on brightness
-      dividerColor: brightness == Brightness.dark
-          ? colorScheme.surfaceContainerHighest
-          : colorScheme.surfaceContainer,
-      
+      dividerColor:
+          brightness == Brightness.dark
+              ? colorScheme.surfaceContainerHighest
+              : colorScheme.surfaceContainer,
+
       // Popup menu styling
       popupMenuTheme: PopupMenuThemeData(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppConfig.borderRadius),
         ),
       ),
-      
+
       // Segmented button styling
       segmentedButtonTheme: SegmentedButtonThemeData(
         style: SegmentedButton.styleFrom(
@@ -103,13 +105,13 @@ abstract class AIChatChatThemes {
           disabledIconColor: colorScheme.onSurface,
         ),
       ),
-      
+
       // Text selection styling
       textSelectionTheme: TextSelectionThemeData(
         selectionColor: colorScheme.onSurface.withAlpha(128),
         selectionHandleColor: colorScheme.secondary,
       ),
-      
+
       // Input field styling
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(
@@ -118,11 +120,12 @@ abstract class AIChatChatThemes {
         contentPadding: const EdgeInsets.all(12),
         filled: false,
       ),
-      
+
       // App bar configuration (adapts to layout mode)
       appBarTheme: AppBarTheme(
         toolbarHeight: isColumnMode ? 72 : 56,
-        shadowColor: isColumnMode ? colorScheme.surfaceContainer.withAlpha(128) : null,
+        shadowColor:
+            isColumnMode ? colorScheme.surfaceContainer.withAlpha(128) : null,
         surfaceTintColor: isColumnMode ? colorScheme.surface : null,
         backgroundColor: isColumnMode ? colorScheme.surface : null,
         systemOverlayStyle: SystemUiOverlayStyle(
@@ -133,7 +136,7 @@ abstract class AIChatChatThemes {
           systemNavigationBarColor: colorScheme.surface,
         ),
       ),
-      
+
       // Outlined button styling
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
@@ -144,15 +147,16 @@ abstract class AIChatChatThemes {
           ),
         ),
       ),
-      
+
       // Snackbar styling (adapts to layout mode)
-      snackBarTheme: isColumnMode
-          ? const SnackBarThemeData(
-              behavior: SnackBarBehavior.floating,
-              width: columnWidth * 1.5, // Use class constant reference
-            )
-          : const SnackBarThemeData(behavior: SnackBarBehavior.floating),
-      
+      snackBarTheme:
+          isColumnMode
+              ? const SnackBarThemeData(
+                behavior: SnackBarBehavior.floating,
+                width: columnWidth * 1.5, // Use class constant reference
+              )
+              : const SnackBarThemeData(behavior: SnackBarBehavior.floating),
+
       // Elevated button styling
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -181,7 +185,7 @@ extension BubbleColorTheme on ThemeData {
       brightness == Brightness.light
           ? colorScheme.primary
           : colorScheme.primaryContainer;
-          
+
   /// Returns the appropriate text color for the primary bubble
   Color get onBubbleColor =>
       brightness == Brightness.light
@@ -190,10 +194,11 @@ extension BubbleColorTheme on ThemeData {
 
   /// Returns a desaturated tertiary color for secondary bubbles
   Color get secondaryBubbleColor {
-    final baseColor = brightness == Brightness.light
-        ? colorScheme.tertiary
-        : colorScheme.tertiaryContainer;
-        
+    final baseColor =
+        brightness == Brightness.light
+            ? colorScheme.tertiary
+            : colorScheme.tertiaryContainer;
+
     // Create a desaturated version of the base color
     return HSLColor.fromColor(baseColor).withSaturation(0.5).toColor();
   }

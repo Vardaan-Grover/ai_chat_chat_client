@@ -24,16 +24,16 @@ class SpaceView extends ConsumerStatefulWidget {
   final String spaceId;
   final void Function() onBack;
   final void Function(String spaceId) toParentSpace;
-  final void Function(sdk.Room room) onChatTab;
-  final void Function(sdk.Room room, BuildContext context) onChatContext;
+  final void Function(sdk.Room room) onChatTap;
+  // final void Function(sdk.Room room, BuildContext context) onChatContext;
   final String? activeChat;
 
   const SpaceView({
     required this.spaceId,
     required this.onBack,
     required this.toParentSpace,
-    required this.onChatTab,
-    required this.onChatContext,
+    required this.onChatTap,
+    // required this.onChatContext,
     required this.activeChat,
     super.key,
   });
@@ -467,7 +467,6 @@ class _SpaceViewState extends ConsumerState<SpaceView> {
                       SliverAppBar(
                         floating: true,
                         toolbarHeight: 72,
-                        scrolledUnderElevation: 16,
                         backgroundColor: Colors.transparent,
                         automaticallyImplyLeading: false,
                         title: TextField(
@@ -547,9 +546,115 @@ class _SpaceViewState extends ConsumerState<SpaceView> {
                         itemCount: joinedRooms.length,
                         itemBuilder: (context, i) {
                           final joinedRoom = joinedRooms[i];
-                          return ChatListItem();
+                          return ChatListItem(
+                            joinedRoom,
+                            filter: filter,
+                            onTap: () => widget.onChatTap(joinedRoom),
+                            // onLongPress:
+                            //     (context) =>
+                            //         widget.onChatContext(joinedRoom, context),
+                            activeChat: widget.activeChat == joinedRoom.id,
+                          );
                         },
                       ),
+                      SliverList.builder(
+                        itemCount: _discoveredChildren.length + 2,
+                        itemBuilder: (context, i) {
+                          if (i == _discoveredChildren.length) {
+                            if (_noMoreRooms) {
+                              return Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Text(
+                                  'No more chats found...',
+                                  style: TextStyle(fontSize: 14),
+                                ),
+                              );
+                            }
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 2,
+                              ),
+                              child: TextButton(
+                                onPressed: _isLoading ? null : _loadHierarchy,
+                                child:
+                                    _isLoading
+                                        ? LinearProgressIndicator(
+                                          borderRadius: BorderRadius.circular(
+                                            AppConfig.borderRadius,
+                                          ),
+                                        )
+                                        : Text('Load more chats'),
+                              ),
+                            );
+                          }
+                          final item = _discoveredChildren[i];
+                          final displayName =
+                              item.name ?? item.canonicalAlias ?? 'Empty Chat';
+                          if (!displayName.toLowerCase().contains(filter)) {
+                            return const SizedBox.shrink();
+                          }
+                          return Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 1,
+                            ),
+                            child: Material(
+                              borderRadius: BorderRadius.circular(
+                                AppConfig.borderRadius,
+                              ),
+                              clipBehavior: Clip.hardEdge,
+                              child: ListTile(
+                                visualDensity: const VisualDensity(
+                                  vertical: -0.5,
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                ),
+                                onTap: () => _joinChildRoom(item),
+                                leading: Avatar(
+                                  mxContent: item.avatarUrl,
+                                  name: displayName,
+                                  borderRadius:
+                                      item.roomType == 'm.space'
+                                          ? BorderRadius.circular(
+                                            AppConfig.borderRadius / 2,
+                                          )
+                                          : null,
+                                ),
+                                title: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        displayName,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    Text(
+                                      item.numJoinedMembers.toString(),
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color:
+                                            theme.textTheme.bodyMedium!.color,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    const Icon(Icons.people_outlined, size: 14),
+                                  ],
+                                ),
+                                subtitle: Text(
+                                  item.topic ??
+                                      '${item.numJoinedMembers} participants',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      const SliverPadding(padding: EdgeInsets.only(top: 32)),
                     ],
                   );
                 },

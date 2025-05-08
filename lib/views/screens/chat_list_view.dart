@@ -1,4 +1,5 @@
 import 'package:ai_chat_chat_client/services/theme/themes.dart';
+import 'package:ai_chat_chat_client/views/widgets/chat-list/chat_list_body.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:matrix/matrix.dart';
@@ -15,7 +16,6 @@ class ChatListView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final Client client = ref.watch(clientProvider);
 
     return PopScope(
       canPop: !controller.isSearchMode && controller.activeSpaceId == null,
@@ -32,25 +32,21 @@ class ChatListView extends ConsumerWidget {
       },
       child: Row(
         children: [
-          if (AIChatChatThemes.isColumnMode(context) && controller.widget.displayNavigationRail) ...[
+          if (AIChatChatThemes.isColumnMode(context) &&
+              controller.widget.displayNavigationRail) ...[
             // TODO: Replace with actual navigation rail
             Container(
               color: theme.navigationRailTheme.backgroundColor,
               width: AIChatChatThemes.navRailWidth,
             ),
-            Container(
-              color: Theme.of(context).dividerColor,
-              width: 1,
-            )
+            Container(color: Theme.of(context).dividerColor, width: 1),
           ],
           Expanded(
             child: GestureDetector(
               onTap: FocusManager.instance.primaryFocus?.unfocus,
               excludeFromSemantics: true,
               behavior: HitTestBehavior.translucent,
-              child: Scaffold(
-                body: ChatListViewBody(),
-              ),
+              child: Scaffold(body: ChatListBody(controller)),
             ),
           ),
         ],

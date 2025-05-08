@@ -3,10 +3,12 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  desktop_drop
   desktop_webview_window
   dynamic_color
   file_selector_linux
   flutter_secure_storage_linux
+  record_linux
   sqlcipher_flutter_libs
   url_launcher_linux
   window_to_front

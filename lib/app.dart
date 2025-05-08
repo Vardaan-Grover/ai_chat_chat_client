@@ -30,6 +30,7 @@ class AiChatChatApp extends ConsumerWidget {
     return ThemeBuilder(
       builder:
           (context, themeMode, primaryColor) => MaterialApp.router(
+            debugShowCheckedModeBanner: false,
             title: AppConfig.applicationName,
             themeMode: themeMode,
             theme: AIChatChatThemes.buildTheme(
@@ -47,25 +48,5 @@ class AiChatChatApp extends ConsumerWidget {
             builder: (context, child) => MyMatrixWidget(child: child),
           ),
     );
-
-    // return ThemeBuilder(
-    //   builder:
-    //       (context, themeMode, primaryColor) => MaterialApp(
-    //         title: AppConfig.applicationName,
-    //         themeMode: themeMode,
-    //         theme: AIChatChatThemes.buildTheme(
-    //           context,
-    //           Brightness.light,
-    //           primaryColor,
-    //         ),
-    //         darkTheme: AIChatChatThemes.buildTheme(
-    //           context,
-    //           Brightness.dark,
-    //           primaryColor,
-    //         ),
-    //         scrollBehavior: CustomScrollBehavior(),
-    //         home: const MyMatrixWidget(child: Login()),
-    //       ),
-    // );
   }
 }
