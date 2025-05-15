@@ -26,17 +26,37 @@ import 'package:record/record.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class ChatPage extends ConsumerStatefulWidget {
+class ChatPage extends ConsumerWidget {
+  final String roomId;
+  final String? eventId;
+
+  const ChatPage({required this.roomId, this.eventId, super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final room = ref.read(clientProvider).getRoomById(roomId);
+    if (room == null) {
+      return const Center(child: Text('Room not found'));
+    }
+    return ChatPageWithRoom(room: room, eventId: eventId);
+  }
+}
+
+class ChatPageWithRoom extends ConsumerStatefulWidget {
   final Room room;
   final String? eventId;
 
-  const ChatPage({required this.room, this.eventId, super.key});
+  const ChatPageWithRoom({
+    super.key,
+    required this.room,
+    required this.eventId,
+  });
 
   @override
-  ConsumerState<ChatPage> createState() => ChatPageController();
+  ConsumerState<ChatPageWithRoom> createState() => ChatPageController();
 }
 
-class ChatPageController extends ConsumerState<ChatPage>
+class ChatPageController extends ConsumerState<ChatPageWithRoom>
     with WidgetsBindingObserver {
   final Logger logger = Logger('ChatPageController');
 
@@ -246,7 +266,7 @@ class ChatPageController extends ConsumerState<ChatPage>
 
   String? scrollUpBannerEventId;
 
-  void discardsScrollUpBannerEventId() =>
+  void discardScrollUpBannerEventId() =>
       setState(() => scrollUpBannerEventId = null);
   void _showScrollUpMaterialBanner(String eventId) =>
       setState(() => scrollUpBannerEventId = eventId);

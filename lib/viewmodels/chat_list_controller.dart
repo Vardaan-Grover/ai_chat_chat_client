@@ -7,6 +7,7 @@ import 'package:ai_chat_chat_client/views/widgets/dialogs/show_scaffold_dialog.d
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart';
 import 'package:matrix/matrix.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
@@ -313,7 +314,7 @@ class ChatListController extends ConsumerState<ChatList> {
       return;
     }
 
-    // TODO: route to chat screen
+    context.go('/rooms/${room.id}');
   }
 
   /// Performs a search operation using the current text in the searchController.

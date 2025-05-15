@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:ai_chat_chat_client/viewmodels/chat_page_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:matrix/matrix.dart';
@@ -66,11 +67,13 @@ abstract class AppRoutes {
                     (context, state) =>
                         _loggedOutRedirect(context, state, client),
                 pageBuilder: (context, state) {
-                  // TODO: implement the page builder for this route
                   return _defaultPageBuilder(
                     context,
                     state,
-                    const EmptyPage(),
+                    ChatPage(
+                      roomId: state.pathParameters['roomId']!,
+                      eventId: state.uri.queryParameters['event'],
+                    ),
                   );
                 },
               ),
